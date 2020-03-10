@@ -8,15 +8,18 @@
 name: X64-1907
 
 on:
-  schedule:
-    - cron: 0 20 * * *
+#  schedule:
+#    - cron: 0 20 * * *
 #  push:
 #    branches: 
 #      - master
-
+  watch:
+    types: [started]
+    
 jobs:
   build:
     runs-on: ubuntu-latest
+    if: github.event.repository.owner.id == github.event.sender.id
 
     steps:
     - uses: actions/checkout@v1
@@ -42,7 +45,7 @@ jobs:
     - name: Install feeds
       run: cd openwrt && ./scripts/feeds install -a
     
-    - name: Costom configure file
+    - name: Custom configure file
       run: |
           cd openwrt
           rm -f .config
@@ -56,7 +59,7 @@ jobs:
     - name: Make download
       run: |
           cd openwrt
-          make download -j8
+          make download -j$(nproc)
           find dl -size -1024c -exec ls -l {} \;
           find dl -size -1024c -exec rm -f {} \;
 
